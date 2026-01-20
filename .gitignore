@@ -1,0 +1,71 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Data files (download separately)
+*.csv
+*.xlsx
+*.xls
+*.json
+*.parquet
+HeartFailureDataset.csv
+
+# Generated outputs
+outputs/
+results/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Python distribution / packaging
+*.manifest
+*.spec
+
+# PyInstaller
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
