@@ -93,25 +93,25 @@ All metrics calculated on held-out test set to assess generalization performance
 
 | Model | Accuracy | Precision | Recall | F1 Score |
 |-------|----------|-----------|--------|----------|
-| KNN (K=5) | 65.8% | 66.5% | 63.6% | 65.0% |
-| KNN (K=9) | 67.8% | 69.2% | 64.1% | 66.5% |
-| Logistic Regression | 72.2% | 74.4% | 67.7% | 70.9% |
+| KNN (K=5) | 64.0% | 64.7% | 61.7% | 63.2% |
+| KNN (K=9) | 64.7% | 65.5% | 62.1% | 63.7% |
+| Logistic Regression | 71.2% | 73.0% | 67.2% | 70.0% |
 
 ### Key Outcomes
 
 **Best Performing Model:** Logistic Regression
-- 72.2% accuracy on test set (15,167 correct predictions out of 21,000)
-- 4.4 percentage point improvement over tuned KNN
-- 555 fewer false positives than KNN (K=9)
-- 217 fewer false negatives than KNN (K=9)
+- 71.2% accuracy on test set (14,949 correct predictions out of 21,000)
+- 6.5 percentage point improvement over tuned KNN
+- 831 fewer false positives than KNN (K=9)
+- 535 fewer false negatives than KNN (K=9)
 
 **Hyperparameter Tuning Impact:**
-- Increasing K from 5 to 9 improved KNN accuracy by 2.0 percentage points
+- Increasing K from 5 to 9 improved KNN accuracy by 0.7 percentage points
 - Demonstrates the value of systematic hyperparameter optimization
 
 **Medical Context:**
-- False negative rate: 24% (2,552 CVD cases missed)
-- False positive rate: 24% (2,480 healthy patients incorrectly flagged)
+- False negative rate: 33% (3,442 CVD cases missed)
+- False positive rate: 25% (2,609 healthy patients incorrectly flagged)
 - Current performance insufficient for autonomous clinical decision-making
 
 ## Technologies Used
@@ -217,21 +217,21 @@ Logistic Regression significantly outperformed K-Nearest Neighbors, suggesting t
 
 ### Hyperparameter Tuning Provides Incremental Gains
 
-Optimizing K from 5 to 9 improved KNN performance by 2 percentage points. While modest, this demonstrates the importance of systematic hyperparameter search rather than accepting default values.
+Optimizing K from 5 to 9 improved KNN accuracy by 0.7 percentage points. While modest, this demonstrates the importance of systematic hyperparameter search rather than accepting default values.
 
 ### Multiple Evaluation Metrics Are Essential
 
-In medical applications, accuracy alone is insufficient. The confusion matrix reveals that both models miss approximately 24% of CVD cases (false negatives), which would be unacceptable in clinical screening where false negatives could delay critical treatment.
+In medical applications, accuracy alone is insufficient. The confusion matrix reveals that even the best model (Logistic Regression) misses about 33% of CVD cases (false negatives), which would be unacceptable in clinical screening where false negatives could delay critical treatment.
 
 ### Medical AI Requires Higher Standards
 
-The 72% accuracy achieved by Logistic Regression, while respectable for a baseline model, highlights the gap between academic performance and clinical deployment requirements. Medical decision support systems typically require 90%+ accuracy with very low false negative rates.
+The 71% accuracy achieved by Logistic Regression, while respectable for a baseline model, highlights the gap between academic performance and clinical deployment requirements. Medical decision support systems typically require 90%+ accuracy with very low false negative rates.
 
 ## Limitations
 
 ### Model Performance
-- 28% overall error rate too high for autonomous clinical decisions
-- 24% false negative rate could lead to missed diagnoses
+- 29% overall error rate too high for autonomous clinical decisions
+- 33% false negative rate could lead to missed diagnoses
 - No analysis of performance across demographic subgroups
 - Single train-test split rather than cross-validation
 
