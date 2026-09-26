@@ -69,3 +69,5 @@ Thumbs.db
 .coverage
 htmlcov/
 .tox/
+# Saved models
+models/
