@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cardio.evaluation import cv_comparison_table, tune_model
-from cardio.models import get_model_specs
+from cardio.evaluation import cv_comparison_table, select_final_model, tune_model
+from cardio.models import COMPLEXITY_ORDER, get_model_specs
 
 
 @pytest.fixture
@@ -59,3 +59,37 @@ def test_cv_comparison_table_includes_dummy_row(synthetic_data):
 
     assert set(table.index) == {"Dummy (stratified)", "Gaussian Naive Bayes"}
     assert "roc_auc (mean)" in table.columns
+
+
+def _comparison(rows):
+    return pd.DataFrame(
+        [{"Model": n, "roc_auc (mean)": m, "roc_auc (std)": sd} for n, m, sd in rows]
+    ).set_index("Model")
+
+
+def test_select_final_model_prefers_simpler_model_within_one_std():
+    table = _comparison(
+        [
+            ("Stacking Ensemble", 0.8022, 0.0035),
+            ("XGBoost", 0.8018, 0.0032),
+            ("Random Forest", 0.8005, 0.0039),
+            ("Logistic Regression", 0.7918, 0.0027),
+        ]
+    )
+    selected, candidates = select_final_model(table, COMPLEXITY_ORDER)
+
+    assert selected == "Random Forest"
+    assert list(candidates.index) == ["Stacking Ensemble", "XGBoost", "Random Forest"]
+
+
+def test_select_final_model_keeps_leader_when_it_clearly_wins():
+    table = _comparison(
+        [("XGBoost", 0.85, 0.002), ("Logistic Regression", 0.79, 0.002)]
+    )
+    selected, _ = select_final_model(table, COMPLEXITY_ORDER)
+
+    assert selected == "XGBoost"
+
+
+def test_complexity_order_covers_every_model_spec():
+    assert set(get_model_specs()) | {"Stacking Ensemble"} == set(COMPLEXITY_ORDER)

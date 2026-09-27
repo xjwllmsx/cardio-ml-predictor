@@ -122,6 +122,25 @@ def get_model_specs():
     return {spec.name: spec for spec in specs}
 
 
+# Models from simplest to most complex, used to break near-ties in model
+# selection. Linear and probabilistic models come first because their
+# predictions are easiest to explain; Random Forest ranks below XGBoost
+# because its trees are independent and it has fewer interacting
+# hyperparameters; the MLP and the stacking ensemble are the least
+# transparent.
+COMPLEXITY_ORDER = [
+    "Dummy (stratified)",
+    "Logistic Regression",
+    "Gaussian Naive Bayes",
+    "Decision Tree",
+    "K-Nearest Neighbors",
+    "Random Forest",
+    "XGBoost",
+    "Neural Network (MLP)",
+    "Stacking Ensemble",
+]
+
+
 def build_stacking_pipeline(tuned_pipelines):
     """Build a stacking ensemble from already-tuned pipelines.
 

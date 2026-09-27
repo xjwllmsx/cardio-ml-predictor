@@ -147,6 +147,27 @@ def cv_comparison_table(searches):
     return pd.DataFrame(rows).set_index("Model")
 
 
+def select_final_model(comparison_table, complexity_order, metric="roc_auc"):
+    """Pick the simplest model whose mean CV score is within one standard
+    deviation of the best model's.
+
+    Returns (selected model name, table of the within-one-std candidates
+    sorted best-first). A gain smaller than the fold-to-fold noise isn't
+    worth the extra complexity, so the tie goes to the simpler model.
+    """
+    ranked = comparison_table.sort_values(f"{metric} (mean)", ascending=False)
+    best_mean = ranked[f"{metric} (mean)"].iloc[0]
+    best_std = ranked[f"{metric} (std)"].iloc[0]
+    candidates = ranked[ranked[f"{metric} (mean)"] >= best_mean - best_std]
+
+    unranked = set(candidates.index) - set(complexity_order)
+    if unranked:
+        raise ValueError(f"No complexity rank for: {sorted(unranked)}")
+
+    selected = min(candidates.index, key=complexity_order.index)
+    return selected, candidates
+
+
 def compute_metrics(y_true, y_pred, y_proba=None):
     """Compute a dict of classification metrics with no printing/plotting side effects."""
     metrics = {

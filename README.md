@@ -96,7 +96,7 @@ Reusable code lives in the `src/cardio` package; the notebook is the narrative t
 - Neural Network (MLP)
 - **Stacking Ensemble** — the three strongest models combined via a Logistic Regression meta-learner
 
-The final model is selected by mean cross-validated ROC-AUC, preferring a simpler model when a leader's advantage is within one standard deviation.
+The final model is the simplest one whose mean cross-validated ROC-AUC is within one standard deviation of the best (`cardio.evaluation.select_final_model`, using the simplest-to-most-complex ranking in `cardio.models.COMPLEXITY_ORDER`) — a gain smaller than the fold-to-fold noise isn't worth the extra complexity.
 
 ### 6. Threshold Tuning
 - The default 0.5 probability threshold is replaced with one tuned to optimize the F2 score (recall weighted twice as heavily as precision), using `TunedThresholdClassifierCV` on out-of-fold training predictions — reflecting that missing a CVD case is worse than an unnecessary follow-up test
@@ -122,31 +122,31 @@ The final model is selected by mean cross-validated ROC-AUC, preferring a simple
 | Logistic Regression | 0.792 | 72.8% | 0.708 |
 | Decision Tree | 0.793 | 73.1% | 0.708 |
 | K-Nearest Neighbors | 0.796 | 73.1% | 0.711 |
-| Random Forest | 0.800 | 73.6% | 0.720 |
+| **Random Forest** (selected) | **0.800** | 73.6% | 0.720 |
 | Neural Network (MLP) | 0.800 | 73.4% | 0.717 |
 | XGBoost | 0.802 | 73.7% | 0.721 |
-| **Stacking Ensemble** (XGBoost + Random Forest + MLP) | **0.8022** | 73.6% | 0.722 |
+| Stacking Ensemble (XGBoost + Random Forest + MLP) | 0.802 | 73.6% | 0.722 |
 
-The Stacking Ensemble was selected as the final model — a small but real edge over XGBoost alone.
+The Stacking Ensemble had the highest mean ROC-AUC (0.8022 ± 0.0035), but XGBoost, Random Forest, and the MLP all fall within one standard deviation of it — differences smaller than the fold-to-fold noise. Random Forest is the simplest of those candidates, so it was selected.
 
 ### Final Test Set Evaluation
 
-| Metric | Stacking Ensemble (tuned threshold) | Stacking Ensemble (default 0.5) | Logistic Regression |
+| Metric | Random Forest (tuned threshold) | Random Forest (default 0.5) | Logistic Regression |
 |---|---|---|---|
-| Accuracy | 59.1% | 73.5% | 72.4% |
-| Recall (Sensitivity) | 96.7% | 68.5% | 66.3% |
-| Specificity | 22.3% | 78.3% | 78.4% |
-| Precision | 54.9% | 75.6% | 75.0% |
-| F1 / F2 | 0.701 / 0.840 | 0.719 / 0.698 | 0.704 / 0.679 |
-| ROC-AUC | 0.801 (95% CI 0.793-0.808) | 0.801 | 0.789 |
+| Accuracy | 57.5% | 73.2% | 72.4% |
+| Recall (Sensitivity) | 97.8% | 68.5% | 66.3% |
+| Specificity | 18.1% | 77.7% | 78.4% |
+| Precision | 53.9% | 75.1% | 75.0% |
+| F1 / F2 | 0.695 / 0.841 | 0.716 / 0.697 | 0.704 / 0.679 |
+| ROC-AUC | 0.798 (95% CI 0.791-0.806) | 0.798 | 0.789 |
 
-**Decision threshold:** tuned to 0.181 (from a default of 0.5) to optimize F2.
+**Decision threshold:** tuned to 0.172 (from a default of 0.5) to optimize F2.
 
 ### Key Outcomes
 
-- **Best model:** the Stacking Ensemble (XGBoost + Random Forest + MLP), ROC-AUC 0.8022 on cross-validation, versus 0.792 for the original project's Logistic Regression.
-- **Threshold tuning is a real trade-off, not a free win.** Optimizing for F2 cuts missed CVD cases from roughly 1 in 3 (default threshold) to **3.3%** (222 of 6,787), a 95% CI of 96.3-97.2% recall — but it also drops overall accuracy from 73.5% to 59.1% and specificity to 22%, meaning most healthy patients would now be flagged for follow-up too.
-- **That cost isn't distributed evenly.** At the tuned threshold, patients 55+ end up with a specificity of about **1%** (nearly everyone flagged), while patients under 45 keep a much more balanced 68.5% specificity — a fairness consideration a single aggregate F2 score hides. See the notebook's subgroup analysis for the full breakdown.
+- **Final model:** Random Forest, cross-validated ROC-AUC 0.800 versus 0.792 for tuned Logistic Regression — chosen over the Stacking Ensemble (0.802) because the ensemble's edge was within one standard deviation.
+- **Threshold tuning is a real trade-off, not a free win.** Optimizing for F2 cuts missed CVD cases from roughly 1 in 3 (default threshold) to **2.2%** (146 of 6,787), a 95% CI of 97.5-98.2% recall — but it also drops overall accuracy from 73.2% to 57.5% and specificity to 18%, meaning most healthy patients would now be flagged for follow-up too.
+- **That cost isn't distributed evenly.** At the tuned threshold, patients 55+ end up with a specificity **under 1%** (nearly everyone flagged), while patients under 45 keep a much more balanced 61.1% specificity — a fairness consideration a single aggregate F2 score hides. See the notebook's subgroup analysis for the full breakdown.
 
 ## Technologies Used
 
@@ -262,7 +262,7 @@ The original version selected KNN's `k` by comparing test-set accuracy for `k=5`
 
 ### Threshold tuning surfaces a real, uneven trade-off
 
-Optimizing the decision threshold for F2 substantially reduces missed CVD cases (down to 3.3%), but at a real cost to overall accuracy and specificity — and that cost falls much harder on older patients than younger ones (see [Results](#results)). This is a concrete illustration of why a single aggregate metric can hide subgroup-level problems.
+Optimizing the decision threshold for F2 substantially reduces missed CVD cases (down to 2.2%), but at a real cost to overall accuracy and specificity — and that cost falls much harder on older patients than younger ones (see [Results](#results)). This is a concrete illustration of why a single aggregate metric can hide subgroup-level problems.
 
 ### Medical AI Still Requires Higher Standards
 
@@ -272,7 +272,7 @@ At either threshold, accuracy stays well under the roughly 90%+ (with a very low
 
 ### Model Performance
 - Accuracy remains well short of what's typically expected for autonomous clinical decisions, at either the default or the tuned threshold
-- The tuned threshold's low specificity (22% overall, ~1% for patients 55+) would generate a large number of unnecessary follow-ups if deployed as-is
+- The tuned threshold's low specificity (18% overall, under 1% for patients 55+) would generate a large number of unnecessary follow-ups if deployed as-is
 - SHAP and permutation importance describe what the model relies on, not whether those relationships are causal
 
 ### Data and Scope
