@@ -83,18 +83,15 @@ def tune_model(spec, X_train, y_train, cv_splits=5, n_jobs=-1):
         )
         pipeline.fit(X_train, y_train)
 
-        cv_results = {
-            f"mean_test_{k}": np.array([np.mean(v)])
-            for k, v in results.items()
-            if k.startswith("test_")
-        }
-        cv_results.update(
-            {
-                f"std_test_{k}": np.array([np.std(v)])
-                for k, v in results.items()
-                if k.startswith("test_")
-            }
-        )
+        cv_results = {}
+        for key, scores in results.items():
+            if not key.startswith("test_"):
+                continue
+            metric = key.removeprefix("test_")
+            cv_results[f"mean_{key}"] = np.array([np.mean(scores)])
+            cv_results[f"std_{key}"] = np.array([np.std(scores)])
+            for i, score in enumerate(scores):
+                cv_results[f"split{i}_test_{metric}"] = np.array([score])
 
         # A minimal stand-in for a fitted SearchCV object, so callers with no
         # hyperparameters to tune (e.g. the Dummy baseline) still produce a

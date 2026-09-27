@@ -78,9 +78,7 @@ def get_model_specs():
         ),
         ModelSpec(
             name="Random Forest",
-            estimator=RandomForestClassifier(
-                random_state=RANDOM_STATE, n_jobs=-1
-            ),
+            estimator=RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=1),
             param_distributions={
                 "model__n_estimators": [200, 400, 600],
                 "model__max_depth": [6, 10, 14, None],
@@ -95,7 +93,7 @@ def get_model_specs():
             estimator=XGBClassifier(
                 eval_metric="logloss",
                 random_state=RANDOM_STATE,
-                n_jobs=-1,
+                n_jobs=1,
             ),
             param_distributions={
                 "model__n_estimators": [200, 400, 600],
